@@ -1,30 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
-  // output   = "../app/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  // url=env("DATABASE_URL")
-}
-
-enum Severity {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
-}
-
-enum TaskStatus {
-  PENDING
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
 }
 
 model User {
@@ -33,6 +12,7 @@ model User {
   name      String?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  password  String
   scenarios Scenario[]
 }
 
@@ -49,32 +29,29 @@ model Regulation {
 }
 
 model Rule {
-  id            String   @id @default(uuid())
+  id            String     @id @default(uuid())
   regulationId  String
   description   String
   condition     String
   severity      Severity
   penaltyPerDay Float?
   maxPenalty    Float?
-
-  regulation Regulation @relation(fields: [regulationId], references: [id], onDelete: Cascade)
+  regulation    Regulation @relation(fields: [regulationId], references: [id], onDelete: Cascade)
 
   @@index([regulationId])
   @@index([severity])
 }
 
 model Scenario {
-  id          String   @id @default(uuid())
-  name        String
-  description String
-  createdById String
-  createdAt   DateTime @default(now())
-
+  id             String             @id @default(uuid())
+  name           String
+  description    String
+  createdById    String
+  createdAt      DateTime           @default(now())
   daysOverdue    Int
   breachedRuleId String
-
-  createdBy User               @relation(fields: [createdById], references: [id])
-  results   SimulationResult[]
+  createdBy      User               @relation(fields: [createdById], references: [id])
+  results        SimulationResult[]
 
   @@index([createdById])
 }
@@ -86,9 +63,22 @@ model SimulationResult {
   riskScore  Float
   penalty    Float
   createdAt  DateTime @default(now())
-
-  scenario Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  scenario   Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
 
   @@index([scenarioId])
   @@index([riskScore])
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
 }
